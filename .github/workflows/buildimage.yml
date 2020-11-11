@@ -23,13 +23,13 @@ jobs:
 
     - name: Build ${{ matrix.image }}
       run: docker build . -f ${{ matrix.image }}/Dockerfile
-           --tag owasp/modsecurity-crs:${{ matrix.image }}
-           --tag owasp/modsecurity-crs:$(echo ${{ matrix.image }} | sed 's/.*-//')
+           --tag antonkravchenko/modsecurity-crs:${{ matrix.image }}
+           --tag antonkravchenko/modsecurity-crs:$(echo ${{ matrix.image }} | sed 's/.*-//')
 
     - name: Set default tag for ${{ matrix.image }}
       if: endsWith(matrix.image, '-apache')
-      run: docker tag owasp/modsecurity-crs:${{ matrix.image }}
-                      owasp/modsecurity-crs:$(echo ${{ matrix.image }} | sed 's/-.*//')
+      run: docker tag antonkravchenko/modsecurity-crs:${{ matrix.image }}
+                      antonkravchenko/modsecurity-crs:$(echo ${{ matrix.image }} | sed 's/-.*//')
 
     - name: Push ${{ matrix.image }}
-      run: docker push owasp/modsecurity-crs
+      run: docker push antonkravchenko/modsecurity-crs
