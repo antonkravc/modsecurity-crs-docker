@@ -1,10 +1,7 @@
-FROM owasp/modsecurity:3
+# Using already cached version.
+FROM owasp/modsecurity:3.0.4
 
 LABEL maintainer="Chaim Sanders <chaim.sanders@gmail.com>"
-
-ARG COMMIT=v3.3/dev
-ARG BRANCH=v3.3/dev
-ARG REPO=coreruleset/coreruleset
 
 ENV PARANOIA=1 \
     ANOMALY_INBOUND=5 \
@@ -25,26 +22,33 @@ ENV PARANOIA=1 \
     MODSEC_PCRE_MATCH_LIMIT=100000 \
     MODSEC_PCRE_MATCH_LIMIT_RECURSION=100000
 
-COPY 3.3-nginx/docker-entrypoint.sh /
-COPY 3.3-nginx/conf.d/default.conf /etc/nginx/conf.d/default.conf
-COPY 3.3-nginx/nginx.conf /etc/nginx/nginx.conf
-COPY src/opt/modsecurity/activate-rules.sh /opt/modsecurity/
-COPY src/etc/modsecurity.d/*.conf /etc/modsecurity.d/
-
-RUN apt-get update \
- && apt-get -y install \
+RUN apt-get update && \
+    apt-get -y install \
       ca-certificates \
       git \
       iproute2 \
-      moreutils \
- && mkdir /opt/owasp-crs \
- && cd /opt/owasp-crs \
- && git init \
- && git remote add origin https://github.com/${REPO} \
- && git fetch --depth 1 origin ${BRANCH} \
- && git checkout ${COMMIT} \
- && mv -v crs-setup.conf.example crs-setup.conf \
- && ln -sv /opt/owasp-crs /etc/modsecurity.d/
+      moreutils
+
+WORKDIR /opt/owasp-crs
+
+ARG CRS_REPO=coreruleset/coreruleset
+ARG CRS_VERSION=v3.0/master
+RUN git clone -b "${CRS_VERSION}" "https://github.com/${CRS_REPO}" .
+
+RUN mv -v crs-setup.conf.example crs-setup.conf
+RUN ln -sv /opt/owasp-crs /etc/modsecurity.d/
+
+COPY 3.3-nginx/docker-entrypoint.sh /
+
+RUN ls /etc/nginx/conf.d/
+RUN cat /etc/nginx/conf.d/default.conf
+
+# This messes up proxy configuration.
+COPY 3.3-nginx/conf.d/default.conf /etc/nginx/conf.d/default.conf
+
+COPY 3.3-nginx/nginx.conf /etc/nginx/nginx.conf
+COPY src/opt/modsecurity/activate-rules.sh /opt/modsecurity/
+COPY src/etc/modsecurity.d/*.conf /etc/modsecurity.d/
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["nginx", "-g", "daemon off;"]
