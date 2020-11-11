@@ -1,4 +1,4 @@
-# ModSecurity Core Rule Set Docker Image
+# This is a fork of ModSecurity Core Rule Set Docker Image
 
 [![dockeri.co](http://dockeri.co/image/owasp/modsecurity-crs)](https://hub.docker.com/r/owasp/modsecurity-crs/)
 
